@@ -40,11 +40,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int enemyY = WIN_HEIGHT / 2;
 	int enemyMode = 2;
 
+	int flight = 0;
+
 	int graphBack[2];
 	graphBack[0] = LoadGraph("background.png");
 	graphBack[1] = LoadGraph("background.png");
 	int backX = 0;
 #pragma endregion 変数及びリソースの宣言・定義
+
 	// ゲームループ
 	while (1)
 	{
@@ -59,6 +62,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		ClearDrawScreen();
 
 #pragma region 更新処理
+		flight++;
 		// モードチェンジ
 		if (keys[KEY_INPUT_R] == 1 || keys[KEY_INPUT_G] == 1 || keys[KEY_INPUT_B] == 1) {
 			if (keys[KEY_INPUT_R] == 1 && oldkeys[KEY_INPUT_R] == 0) {
@@ -70,6 +74,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			else if (keys[KEY_INPUT_B] == 1 && oldkeys[KEY_INPUT_B] == 0) {
 				playerMode = 2;
 			}
+		}
+		enemyX -= 3;
+		// 自機射程内捕捉
+		if (enemyX - playerX <= 200) {
+			// 有効属性
+			if (playerMode == enemyMode) {
+				enemyX = WIN_WIDTH + 20;
+			}
+		}
+		// 敵機直撃
+		if (enemyX - playerX <= 5) {
+			enemyX = WIN_WIDTH + 20;
 		}
 		// 背景スクロール
 		backX--;
@@ -134,6 +150,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				GetColor(128, 128, 255), TRUE
 			);
 		}
+		// 自機レティクル
+		DrawCircle(playerX + 200, playerY, 5, GetColor(255, 255, 255), false);
 #pragma endregion 描画処理
 
 		// スクリーンフリップ
