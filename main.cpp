@@ -36,9 +36,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int playerX = WIN_WIDTH / 2;
 	int playerY = WIN_HEIGHT / 2;
 	int playerMode = 0;
+	int playerRange = 200;
+
 	int enemyX = WIN_WIDTH - 20;
 	int enemyY = WIN_HEIGHT / 2;
 	int enemyMode = 2;
+	int enemySpeed = 4;
 
 	int flight = 0;
 
@@ -75,17 +78,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				playerMode = 2;
 			}
 		}
-		enemyX -= 3;
+		enemyX -= enemySpeed;
 		// 自機射程内捕捉
-		if (enemyX - playerX <= 200) {
+		if (enemyX - playerX <= playerRange) {
 			// 有効属性
 			if (playerMode == enemyMode) {
 				enemyX = WIN_WIDTH + 20;
+				enemyMode = rand() % 3;
 			}
 		}
 		// 敵機直撃
 		if (enemyX - playerX <= 5) {
 			enemyX = WIN_WIDTH + 20;
+			enemyMode = rand() % 3;
 		}
 		// 背景スクロール
 		backX--;
@@ -151,7 +156,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			);
 		}
 		// 自機レティクル
-		DrawCircle(playerX + 200, playerY, 5, GetColor(255, 255, 255), false);
+		DrawCircle(playerX + playerRange, playerY, 5, GetColor(255, 255, 255), false);
 #pragma endregion 描画処理
 
 		// スクリーンフリップ
