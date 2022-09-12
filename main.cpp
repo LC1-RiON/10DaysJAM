@@ -35,7 +35,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #pragma region 変数及びリソースの宣言・定義
 	int playerX = WIN_WIDTH / 2;
 	int playerY = WIN_HEIGHT / 2;
-	int mode = 0;
+	int playerMode = 0;
+	int enemyX = WIN_WIDTH - 20;
+	int enemyY = WIN_HEIGHT / 2;
+	int enemyMode = 2;
 
 	int graphBack[2];
 	graphBack[0] = LoadGraph("background.png");
@@ -59,13 +62,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		// モードチェンジ
 		if (keys[KEY_INPUT_R] == 1 || keys[KEY_INPUT_G] == 1 || keys[KEY_INPUT_B] == 1) {
 			if (keys[KEY_INPUT_R] == 1 && oldkeys[KEY_INPUT_R] == 0) {
-				mode = 0;
+				playerMode = 0;
 			}
 			else if (keys[KEY_INPUT_G] == 1 && oldkeys[KEY_INPUT_G] == 0) {
-				mode = 1;
+				playerMode = 1;
 			}
 			else if (keys[KEY_INPUT_B] == 1 && oldkeys[KEY_INPUT_B] == 0) {
-				mode = 2;
+				playerMode = 2;
 			}
 		}
 		// 背景スクロール
@@ -76,12 +79,38 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #pragma endregion 更新処理
 
 #pragma region 描画処理
+		// スクロール背景
 		for (int i = 0; i < 2; i++)
 		{
 			DrawGraph(backX + i * WIN_WIDTH, 0, graphBack[i], FALSE);
 		}
+		// 仮敵機、自機よりはっきりRGB
+		if (enemyMode == 0) {
+			DrawTriangle(
+				enemyX + 10, enemyY + 10,
+				enemyX + 10, enemyY - 10,
+				enemyX - 10, enemyY,
+				GetColor(255, 0, 0), TRUE
+			);
+		}
+		else if (enemyMode == 1) {
+			DrawTriangle(
+				enemyX + 10, enemyY + 10,
+				enemyX + 10, enemyY - 10,
+				enemyX - 10, enemyY,
+				GetColor(0, 255, 0), TRUE
+			);
+		}
+		else if (enemyMode == 2) {
+			DrawTriangle(
+				enemyX + 10, enemyY + 10,
+				enemyX + 10, enemyY - 10,
+				enemyX - 10, enemyY,
+				GetColor(0, 0, 255), TRUE
+			);
+		}
 		// 自機代わりの三角形
-		if (mode == 0) {
+		if (playerMode == 0) {
 			DrawTriangle(
 				playerX - 10, playerY + 10,
 				playerX - 10, playerY - 10,
@@ -89,7 +118,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				GetColor(255, 128, 128), TRUE
 			);
 		}
-		if (mode == 1) {
+		else if (playerMode == 1) {
 			DrawTriangle(
 				playerX - 10, playerY + 10,
 				playerX - 10, playerY - 10,
@@ -97,7 +126,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				GetColor(128, 255, 128), TRUE
 			);
 		}
-		if (mode == 2) {
+		else if (playerMode == 2) {
 			DrawTriangle(
 				playerX - 10, playerY + 10,
 				playerX - 10, playerY - 10,
