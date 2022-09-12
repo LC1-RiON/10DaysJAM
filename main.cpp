@@ -35,6 +35,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #pragma region 変数及びリソースの宣言・定義
 	int playerX = WIN_WIDTH / 2;
 	int playerY = WIN_HEIGHT / 2;
+	int mode = 0;
 #pragma endregion 変数及びリソースの宣言・定義
 	// ゲームループ
 	while (1)
@@ -50,18 +51,46 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		ClearDrawScreen();
 
 #pragma region 更新処理
-
+		// モードチェンジ
+		if (keys[KEY_INPUT_R] == 1 || keys[KEY_INPUT_G] == 1 || keys[KEY_INPUT_B] == 1) {
+			if (keys[KEY_INPUT_R] == 1 && oldkeys[KEY_INPUT_R] == 0) {
+				mode = 0;
+			}
+			else if (keys[KEY_INPUT_G] == 1 && oldkeys[KEY_INPUT_G] == 0) {
+				mode = 1;
+			}
+			else if (keys[KEY_INPUT_B] == 1 && oldkeys[KEY_INPUT_B] == 0) {
+				mode = 2;
+			}
+		}
 #pragma endregion 更新処理
 
 #pragma region 描画処理
 		// 自機代わりの三角形
-		DrawPixel(WIN_WIDTH / 2, WIN_HEIGHT / 2, GetColor(255, 255, 255));
-		DrawTriangle(
-			playerX - 10, playerY + 10,
-			playerX - 10, playerY - 10,
-			playerX + 10, playerY,
-			GetColor(255, 255, 255), TRUE
-		);
+		if (mode == 0) {
+			DrawTriangle(
+				playerX - 10, playerY + 10,
+				playerX - 10, playerY - 10,
+				playerX + 10, playerY,
+				GetColor(255, 128, 128), TRUE
+			);
+		}
+		if (mode == 1) {
+			DrawTriangle(
+				playerX - 10, playerY + 10,
+				playerX - 10, playerY - 10,
+				playerX + 10, playerY,
+				GetColor(128, 255, 128), TRUE
+			);
+		}
+		if (mode == 2) {
+			DrawTriangle(
+				playerX - 10, playerY + 10,
+				playerX - 10, playerY - 10,
+				playerX + 10, playerY,
+				GetColor(128, 128, 255), TRUE
+			);
+		}
 #pragma endregion 描画処理
 
 		// スクリーンフリップ
