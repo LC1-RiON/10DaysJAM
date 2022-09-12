@@ -36,6 +36,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int playerX = WIN_WIDTH / 2;
 	int playerY = WIN_HEIGHT / 2;
 	int mode = 0;
+
+	int graphBack[2];
+	graphBack[0] = LoadGraph("background.png");
+	graphBack[1] = LoadGraph("background.png");
+	int backX = 0;
 #pragma endregion 変数及びリソースの宣言・定義
 	// ゲームループ
 	while (1)
@@ -63,9 +68,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				mode = 2;
 			}
 		}
+		// 背景スクロール
+		backX--;
+		if (backX <= -WIN_WIDTH) {
+			backX += WIN_WIDTH;
+		}
 #pragma endregion 更新処理
 
 #pragma region 描画処理
+		for (int i = 0; i < 2; i++)
+		{
+			DrawGraph(backX + i * WIN_WIDTH, 0, graphBack[i], FALSE);
+		}
 		// 自機代わりの三角形
 		if (mode == 0) {
 			DrawTriangle(
