@@ -33,7 +33,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	char oldkeys[256] = {};
 
 #pragma region 変数及びリソースの宣言・定義
-
+	int playerX = WIN_WIDTH / 2;
+	int playerY = WIN_HEIGHT / 2;
 #pragma endregion 変数及びリソースの宣言・定義
 	// ゲームループ
 	while (1)
@@ -53,8 +54,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #pragma endregion 更新処理
 
 #pragma region 描画処理
-		// 画面中央白点の描画テスト
+		// 自機代わりの三角形
 		DrawPixel(WIN_WIDTH / 2, WIN_HEIGHT / 2, GetColor(255, 255, 255));
+		DrawTriangle(
+			playerX - 10, playerY + 10,
+			playerX - 10, playerY - 10,
+			playerX + 10, playerY,
+			GetColor(255, 255, 255), TRUE
+		);
 #pragma endregion 描画処理
 
 		// スクリーンフリップ
