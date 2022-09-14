@@ -33,15 +33,34 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	char oldkeys[256] = {};
 
 #pragma region 変数及びリソースの宣言・定義
+	// 乱数初期化
+	DATEDATA nowTime;
+	GetDateTime(&nowTime);
+	int randSeed = nowTime.Sec + nowTime.Min + nowTime.Hour + nowTime.Day + nowTime.Mon + nowTime.Year;
+	srand(randSeed);
+
 	int playerX = WIN_WIDTH / 2;
 	int playerY = WIN_HEIGHT / 2;
 	int playerMode = 0;
 	int playerRange = 200;
 
-	int enemyX = WIN_WIDTH - 20;
-	int enemyY = WIN_HEIGHT / 2;
-	int enemyMode = 2;
-	int enemySpeed = 4;
+	const int enemyNum = 50;
+	int enemyX[enemyNum];
+	int enemyY[enemyNum];
+	int enemyAlive[enemyNum];
+	int enemyMode[enemyNum];
+	int enemySpeed[enemyNum];
+	int enemySpawn[enemyNum];
+
+	for (int i = 0; i < enemyNum; i++)
+	{
+		enemyX[i] = WIN_WIDTH + 10;
+		enemyY[i] = WIN_HEIGHT / 2;
+		enemyAlive[i] = 0;
+		enemyMode[i] = rand() % 3;
+		enemySpeed[i] = 4;
+		enemySpawn[i] = rand() % 150 + 30;
+	}
 
 	int flight = 0;
 
@@ -78,19 +97,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				playerMode = 2;
 			}
 		}
-		enemyX -= enemySpeed;
-		// 自機射程内捕捉
-		if (enemyX - playerX <= playerRange) {
-			// 有効属性
-			if (playerMode == enemyMode) {
-				enemyX = WIN_WIDTH + 20;
-				enemyMode = rand() % 3;
+		for (int i = 0; i < enemyNum; i++) {
+			if (enemyAlive[i] == 1) {
+				enemyX[i] -= enemySpeed[i];
+				// 自機射程内捕捉
+				if (enemyX[i] - playerX <= playerRange) {
+					// 有効属性
+					if (playerMode == enemyMode[i]) {
+						enemyAlive[i] = 0;
+						enemySpawn[i] = rand() % 150 + 30;
+					}
+				}
+				// 敵機直撃
+				if (enemyX[i] - playerX <= 5) {
+					enemyAlive[i] = 0;
+					enemySpawn[i] = rand() % 150 + 30;
+				}
 			}
-		}
-		// 敵機直撃
-		if (enemyX - playerX <= 5) {
-			enemyX = WIN_WIDTH + 20;
-			enemyMode = rand() % 3;
+			else if (enemyAlive[i] == 0) {
+				enemySpawn[i]--;
+				if (enemySpawn[i] <= 0) {
+					enemyAlive[i] = 1;
+					enemyX[i] = WIN_WIDTH + 10;
+				}
+			}
 		}
 		// 背景スクロール
 		backX--;
@@ -105,30 +135,34 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		{
 			DrawGraph(backX + i * WIN_WIDTH, 0, graphBack[i], FALSE);
 		}
-		// 仮敵機、自機よりはっきりRGB
-		if (enemyMode == 0) {
-			DrawTriangle(
-				enemyX + 10, enemyY + 10,
-				enemyX + 10, enemyY - 10,
-				enemyX - 10, enemyY,
-				GetColor(255, 0, 0), TRUE
-			);
-		}
-		else if (enemyMode == 1) {
-			DrawTriangle(
-				enemyX + 10, enemyY + 10,
-				enemyX + 10, enemyY - 10,
-				enemyX - 10, enemyY,
-				GetColor(0, 255, 0), TRUE
-			);
-		}
-		else if (enemyMode == 2) {
-			DrawTriangle(
-				enemyX + 10, enemyY + 10,
-				enemyX + 10, enemyY - 10,
-				enemyX - 10, enemyY,
-				GetColor(0, 0, 255), TRUE
-			);
+		for (int i = 0; i < enemyNum; i++) {
+			// 仮敵機、自機よりはっきりRGB
+			if (enemyAlive[i] == 1) {
+				if (enemyMode[i] == 0) {
+					DrawTriangle(
+						enemyX[i] + 10, enemyY[i] + 10,
+						enemyX[i] + 10, enemyY[i] - 10,
+						enemyX[i] - 10, enemyY[i],
+						GetColor(255, 0, 0), TRUE
+					);
+				}
+				else if (enemyMode[i] == 1) {
+					DrawTriangle(
+						enemyX[i] + 10, enemyY[i] + 10,
+						enemyX[i] + 10, enemyY[i] - 10,
+						enemyX[i] - 10, enemyY[i],
+						GetColor(0, 255, 0), TRUE
+					);
+				}
+				else if (enemyMode[i] == 2) {
+					DrawTriangle(
+						enemyX[i] + 10, enemyY[i] + 10,
+						enemyX[i] + 10, enemyY[i] - 10,
+						enemyX[i] - 10, enemyY[i],
+						GetColor(0, 0, 255), TRUE
+					);
+				}
+			}
 		}
 		// 自機代わりの三角形
 		if (playerMode == 0) {
