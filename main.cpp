@@ -45,8 +45,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int playerMode = 0;
 	int playerRange = 200;
 	const int playerCT = 10;
-	int playerChange = playerCT;
+	int playerChange = 0;
 	int playerRail = 1;
+	int playerHP = 1;
 
 	// 敵機ステ
 	const int enemyNum = 50;
@@ -73,10 +74,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int gateX = WIN_WIDTH + 5;
 	int gateY = playerY;
 	int gateFlag = 0;
-	int gateType = rand() % 3;
+	int gateMode = rand() % 3;
 	int gateRail = rand() % 2 * 2;/*0:上中、1:上下、2:中下*/
 	int score = 0;
-	int flight = 0;
 
 	int graphBack[2];
 	graphBack[0] = LoadGraph("background.png");
@@ -115,13 +115,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #pragma region 更新処理
 		switch (scene) {
 		case TITLE:
-			if (CheckHitKeyAll(DX_CHECKINPUT_KEY)) {
+			if (keys[KEY_INPUT_SPACE] == 1 && oldkeys[KEY_INPUT_SPACE] == 0) {
 				scene = PLAY;
 			}
 			break;
 
 		case PLAY:
-			flight++;
+			// 自機挙動
 			// モードチェンジ
 			if (playerChange > 0)
 				playerChange--;
@@ -141,6 +141,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					}
 				}
 			}
+			// 敵機挙動
 			for (int i = 0; i < enemyLimit; i++) {
 				// 生存時挙動
 				if (enemyAlive[i] == 1) {
@@ -155,7 +156,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						}
 					}
 					// 敵機直撃
-					if (enemyX[i] - playerX <= 5) {
+					if (enemyX[i] - playerX <= 5 && enemyX[i] - playerX >= -5) {
+						playerHP--;
 						enemyAlive[i] = 0;
 						enemySpawn[i] = rand() % 150 + 30;
 					}
@@ -202,9 +204,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (backX <= -WIN_WIDTH) {
 				backX += WIN_WIDTH;
 			}
+			// 残機ゼロでリザルト
+			if (playerHP <= 0) {
+				scene = RESULT;
+			}
 			break;
 
 		case RESULT:
+			if (keys[KEY_INPUT_SPACE] == 1) {
+				playerMode = 0;
+				playerChange = 0;
+				playerHP = 1;
+				scene = TITLE;
+			}
 			break;
 		}
 #pragma endregion 更新処理
