@@ -39,13 +39,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int randSeed = nowTime.Sec + nowTime.Min + nowTime.Hour + nowTime.Day + nowTime.Mon + nowTime.Year;
 	srand(randSeed);
 
+	// 自機ステ
 	int playerX = 100;
 	int playerY = WIN_HEIGHT / 2;
 	int playerMode = 0;
 	int playerRange = 200;
 	const int playerCT = 10;
 	int playerChange = playerCT;
+	int playerRail = 1;
 
+	// 敵機ステ
 	const int enemyNum = 50;
 	int enemyX[enemyNum];
 	int enemyY[enemyNum];
@@ -53,6 +56,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int enemyMode[enemyNum];
 	int enemySpeed[enemyNum];
 	int enemySpawn[enemyNum];
+	int enemyRail[enemyNum];
 	int enemyLimit = 1;
 
 	for (int i = 0; i < enemyNum; i++)
@@ -63,8 +67,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		enemyMode[i] = rand() % 3;
 		enemySpeed[i] = 4;
 		enemySpawn[i] = rand() % 150 + 30;
+		enemyRail[i] = 1;
 	}
 
+	int gateX = WIN_WIDTH + 5;
+	int gateY = playerY;
+	int gateFlag = 0;
+	int gateType = rand() % 3;
+	int gateRail = rand() % 2 * 2;/*0:上中、1:上下、2:中下*/
 	int score = 0;
 	int flight = 0;
 
@@ -74,6 +84,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int backX = 0;
 	int graphTitle;
 	graphTitle = LoadGraph("title.png");
+	int graphPlayer[3];
+	graphPlayer[0] = LoadGraph("playerR.png");
+	graphPlayer[1] = LoadGraph("playerG.png");
+	graphPlayer[2] = LoadGraph("playerB.png");
+	int graphEnemy[3];
+	graphEnemy[0] = LoadGraph("enemyR.png");
+	graphEnemy[1] = LoadGraph("enemyG.png");
+	graphEnemy[2] = LoadGraph("enemyB.png");
 #pragma endregion 変数及びリソースの宣言・定義
 
 	enum Scene {
@@ -109,15 +127,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				playerChange--;
 			else if (playerChange <= 0) {
 				if (keys[KEY_INPUT_R] == 1 || keys[KEY_INPUT_G] == 1 || keys[KEY_INPUT_B] == 1) {
-					if (keys[KEY_INPUT_R] == 1 && oldkeys[KEY_INPUT_R] == 0) {
+					if (keys[KEY_INPUT_R] == 1 && oldkeys[KEY_INPUT_R] == 0 && playerMode != 0) {
 						playerMode = 0;
 						playerChange = playerCT;
 					}
-					else if (keys[KEY_INPUT_G] == 1 && oldkeys[KEY_INPUT_G] == 0) {
+					else if (keys[KEY_INPUT_G] == 1 && oldkeys[KEY_INPUT_G] == 0 && playerMode != 1) {
 						playerMode = 1;
 						playerChange = playerCT;
 					}
-					else if (keys[KEY_INPUT_B] == 1 && oldkeys[KEY_INPUT_B] == 0) {
+					else if (keys[KEY_INPUT_B] == 1 && oldkeys[KEY_INPUT_B] == 0 && playerMode != 2) {
 						playerMode = 2;
 						playerChange = playerCT;
 					}
@@ -147,12 +165,38 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					enemySpawn[i]--;
 					if (enemySpawn[i] <= 0) {
 						enemyAlive[i] = 1;
+						enemyRail[i] = playerRail;
 						enemyX[i] = WIN_WIDTH + 10;
 						enemyMode[i] = rand() % 3;
 					}
 				}
 			}
 			enemyLimit = 1 + score / 1000;
+			// ゲート挙動
+			if (score >= 10000) {
+				if (gateFlag == 0) {
+					if (rand() % 6000 == 0) {
+						gateFlag = 1;
+						switch (playerRail) {
+						case 0:
+							// 0or1
+							gateRail = rand() % 2;
+							break;
+						case 1:
+							// 0or2
+							gateRail = rand() % 2 * 2;
+							break;
+						case 2:
+							// 1or2
+							gateRail = rand() % 2 + 1;
+							break;
+						}
+					}
+				}
+				else if (gateFlag == 1) {
+					gateX -= 4;
+				}
+			}
 			// 背景スクロール
 			backX--;
 			if (backX <= -WIN_WIDTH) {
@@ -181,55 +225,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				// 仮敵機、自機よりはっきりRGB
 				if (enemyAlive[i] == 1) {
 					if (enemyMode[i] == 0) {
-						DrawTriangle(
-							enemyX[i] + 10, enemyY[i] + 10,
-							enemyX[i] + 10, enemyY[i] - 10,
-							enemyX[i] - 10, enemyY[i],
-							GetColor(255, 0, 0), TRUE
-						);
+						DrawGraph(enemyX[i]-32, enemyY[i]-32, graphEnemy[0], TRUE);
 					}
 					else if (enemyMode[i] == 1) {
-						DrawTriangle(
-							enemyX[i] + 10, enemyY[i] + 10,
-							enemyX[i] + 10, enemyY[i] - 10,
-							enemyX[i] - 10, enemyY[i],
-							GetColor(0, 255, 0), TRUE
-						);
+						DrawGraph(enemyX[i]-32, enemyY[i]-32, graphEnemy[1], TRUE);
 					}
 					else if (enemyMode[i] == 2) {
-						DrawTriangle(
-							enemyX[i] + 10, enemyY[i] + 10,
-							enemyX[i] + 10, enemyY[i] - 10,
-							enemyX[i] - 10, enemyY[i],
-							GetColor(0, 0, 255), TRUE
-						);
+						DrawGraph(enemyX[i]-32, enemyY[i]-32, graphEnemy[2], TRUE);
 					}
 				}
 			}
-			// 自機代わりの三角形
+			// 自機代わりの三角形、とモードチェンジのなんか波動
 			if (playerMode == 0) {
-				DrawTriangle(
-					playerX - 10, playerY + 10,
-					playerX - 10, playerY - 10,
-					playerX + 10, playerY,
-					GetColor(255, 128, 128), TRUE
-				);
+				DrawCircle(playerX, playerY, playerChange * 3, GetColor(255, 128, 128), FALSE);
+				DrawGraph(playerX - 32, playerY - 32, graphPlayer[0], TRUE);
 			}
 			else if (playerMode == 1) {
-				DrawTriangle(
-					playerX - 10, playerY + 10,
-					playerX - 10, playerY - 10,
-					playerX + 10, playerY,
-					GetColor(128, 255, 128), TRUE
-				);
+				DrawCircle(playerX, playerY, playerChange * 3, GetColor(128, 255, 128), FALSE);
+				DrawGraph(playerX - 32, playerY - 32, graphPlayer[1], TRUE);
 			}
 			else if (playerMode == 2) {
-				DrawTriangle(
-					playerX - 10, playerY + 10,
-					playerX - 10, playerY - 10,
-					playerX + 10, playerY,
-					GetColor(128, 128, 255), TRUE
-				);
+				DrawCircle(playerX, playerY, playerChange * 3, GetColor(128, 128, 255), FALSE);
+				DrawGraph(playerX - 32, playerY - 32, graphPlayer[2], TRUE);
 			}
 			// 自機レティクル
 			DrawCircle(playerX + playerRange, playerY, 5, GetColor(255, 255, 255), false);
