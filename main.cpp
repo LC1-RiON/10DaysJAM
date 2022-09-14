@@ -1,6 +1,6 @@
 #include "DxLib.h"
 
-const char TITLE[] = "GAME TITLE";
+const char TITLE[] = "3066_TypeFlight";
 
 const int WIN_WIDTH = 1280;
 
@@ -39,7 +39,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int randSeed = nowTime.Sec + nowTime.Min + nowTime.Hour + nowTime.Day + nowTime.Mon + nowTime.Year;
 	srand(randSeed);
 
-	int playerX = WIN_WIDTH / 2;
+	int playerX = 100;
 	int playerY = WIN_HEIGHT / 2;
 	int playerMode = 0;
 	int playerRange = 200;
@@ -51,6 +51,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int enemyMode[enemyNum];
 	int enemySpeed[enemyNum];
 	int enemySpawn[enemyNum];
+	int enemyLimit = 1;
 
 	for (int i = 0; i < enemyNum; i++)
 	{
@@ -62,6 +63,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		enemySpawn[i] = rand() % 150 + 30;
 	}
 
+	int score = 0;
 	int flight = 0;
 
 	int graphBack[2];
@@ -97,13 +99,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				playerMode = 2;
 			}
 		}
-		for (int i = 0; i < enemyNum; i++) {
+		for (int i = 0; i < enemyLimit; i++) {
+			// 生存時挙動
 			if (enemyAlive[i] == 1) {
 				enemyX[i] -= enemySpeed[i];
 				// 自機射程内捕捉
 				if (enemyX[i] - playerX <= playerRange) {
 					// 有効属性
 					if (playerMode == enemyMode[i]) {
+						score += 100 + (playerRange - (enemyX[i] - playerX));
 						enemyAlive[i] = 0;
 						enemySpawn[i] = rand() % 150 + 30;
 					}
@@ -114,14 +118,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					enemySpawn[i] = rand() % 150 + 30;
 				}
 			}
+			// 出現時挙動
 			else if (enemyAlive[i] == 0) {
 				enemySpawn[i]--;
 				if (enemySpawn[i] <= 0) {
 					enemyAlive[i] = 1;
 					enemyX[i] = WIN_WIDTH + 10;
+					enemyMode[i] = rand() % 3;
 				}
 			}
 		}
+		enemyLimit = 1 + score / 1000;
 		// 背景スクロール
 		backX--;
 		if (backX <= -WIN_WIDTH) {
